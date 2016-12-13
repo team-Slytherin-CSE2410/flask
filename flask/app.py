@@ -150,6 +150,10 @@ class Flask(_PackageBoundObject):
                       manually defined.
     """
 
+    # for sorting routing rules in desired order
+    TOP_COMPARE_KEY = False, -100, [(-2, 0)]
+    BOTTOM_COMPARE_KEY = True, 100, [(2, 0)]
+
     #: The class that is used for request objects.  See :class:`~flask.Request`
     #: for more information.
     request_class = Request
@@ -1080,7 +1084,11 @@ class Flask(_PackageBoundObject):
         """
         def decorator(f):
             endpoint = options.pop('endpoint', None)
+            compare_key = options.pop('compare_key', None)
             self.add_url_rule(rule, endpoint, f, **options)
+            if compare_key is not None:
+                r = self.url_map._rules[-1]
+                r.match_compare_key = lambda: compare_key
             return f
         return decorator
 
